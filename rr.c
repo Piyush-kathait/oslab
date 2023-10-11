@@ -1,78 +1,50 @@
-#include <stdio.h>
-
-// Function to find the waiting time for all processes
-void findWaitingTime(int processes[], int n, int bt[], int wt[], int quantum)
-{
-    int rem_bt[n];
-    for (int i = 0; i < n; i++)
-        rem_bt[i] = bt[i];
-
-    int t = 0;
-
-    while (1)
-    {
-        int done = 1;
-
-        for (int i = 0; i < n; i++)
-        {
-            if (rem_bt[i] > 0)
-            {
-                done = 0;
-
-                if (rem_bt[i] > quantum)
-                {
-                    t += quantum;
-                    rem_bt[i] -= quantum;
-                }
-                else
-                {
-                    t = t + rem_bt[i];
-                    wt[i] = t - bt[i];
-                    rem_bt[i] = 0;
-                }
-            }
-        }
-
-        if (done == 1)
-            break;
-    }
-}
-
-// Function to calculate turn around time
-void findTurnAroundTime(int processes[], int n, int bt[], int wt[], int tat[])
-{
-    for (int i = 0; i < n; i++)
-        tat[i] = bt[i] + wt[i];
-}
-
-// Function to calculate average time
-void findavgTime(int processes[], int n, int bt[], int quantum)
-{
-    int wt[n], tat[n], total_wt = 0, total_tat = 0;
-
-    findWaitingTime(processes, n, bt, wt, quantum);
-    findTurnAroundTime(processes, n, bt, wt, tat);
-
-    printf("PN \tBT \tWT \tTAT\n");
-
-    for (int i = 0; i < n; i++)
-    {
-        total_wt = total_wt + wt[i];
-        total_tat = total_tat + tat[i];
-        printf("%d\t%d\t%d\t%d\n", i + 1, bt[i], wt[i], tat[i]);
-    }
-
-    printf("Average waiting time = %f\n", (float)total_wt / (float)n);
-    printf("Average turn around time = %f\n", (float)total_tat / (float)n);
-}
-
+#include<stdio.h>
 int main()
 {
-    int processes[] = {1, 2, 3};
-    int n = sizeof(processes) / sizeof(processes[0]);
-    int burst_time[] = {10, 5, 8};
-    int quantum = 2;
-
-    findavgTime(processes, n, burst_time, quantum);
-    return 0;
+int cnt,j,n,t,remain,flag=0,tq;
+int wt=0,tat=0,at[10],bt[10],rt[10];
+printf("Enter Total Process:\t ");
+scanf("%d",&n);
+remain=n;
+for(cnt=0;cnt<n;cnt++)
+{
+printf("Enter Arrival Time and Burst Time for Process Process Number %d :",cnt+1);
+scanf("%d",&at[cnt]);
+scanf("%d",&bt[cnt]);
+rt[cnt]=bt[cnt];
+}
+printf("Enter Time Quantum:\t");
+scanf("%d",&tq);
+printf("\n\nProcess\t|Turnaround Time|Waiting Time\n\n");
+for(t=0,cnt=0;remain!=0;)
+{
+if(rt[cnt]<=tq && rt[cnt]>0)
+{
+t+=rt[cnt];
+rt[cnt]=0;
+flag=1;
+}
+else if(rt[cnt]>0)
+{
+rt[cnt]-=tq;
+t+=tq;
+}
+if(rt[cnt]==0 && flag==1)
+{
+remain--;
+printf("P[%d]\t|\t%d\t|\t%d\n",cnt+1,t-at[cnt],t-at[cnt]-bt[cnt]);
+wt+=t-at[cnt]-bt[cnt];
+tat+=t-at[cnt];
+flag=0;
+}
+if(cnt==n-1)
+cnt=0;
+else if(at[cnt+1]<=t)
+cnt++;
+else
+cnt=0;
+}
+printf("\nAverage Waiting Time= %f\n",wt1.0/n);
+printf("Avg Turnaround Time = %f",tat1.0/n);
+return 0;
 }
