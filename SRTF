@@ -1,0 +1,121 @@
+#include <stdio.h>
+#include <stdlib.h>
+struct Process
+{
+    int id;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int completionTime;
+    int turnaroundTime;
+    int waitingTime;
+    int responseTime;
+};
+
+int totalExecutionTime(struct Process processes[], int n)
+{
+    int total = 0;
+    for (int i = 0; i < n; i++)
+    {
+        total += processes[i].burstTime;
+    }
+    return total;
+}
+
+int findShortestRemainingTime(struct Process processes[], int n, int currentTime)
+{
+    int shortest = -1;
+    for (int i = 0; i < n; i++)
+    {
+        if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0)
+        {
+            if (shortest == -1 || processes[i].remainingTime < processes[shortest].remainingTime)
+            {
+                shortest = i;
+            }
+        }
+    }
+    return shortest;
+}
+
+int main()
+{
+    int n, currentTime = 0;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    struct Process processes[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        processes[i].id = i + 1;
+        printf("Enter Arrival Time for Process %d: ", i + 1);
+        scanf("%d", &processes[i].arrivalTime);
+        printf("Enter Burst Time for Process %d: ", i + 1);
+        scanf("%d", &processes[i].burstTime);
+        processes[i].remainingTime = processes[i].burstTime;
+    }
+
+    int totalExecTime = totalExecutionTime(processes, n);
+    int completed = 0;
+    int contextSwitches = 0;
+    int totalTAT = 0;
+    int totalWT = 0;
+    int totalResponseTime = 0;
+
+    printf("\nGantt Chart:\n");
+    printf("0");
+
+    while (completed < n)
+    {
+        int shortest = findShortestRemainingTime(processes, n, currentTime);
+        if (shortest == -1)
+        {
+            currentTime++;
+        }
+        else
+        {
+            processes[shortest].remainingTime--;
+            currentTime++;
+
+            if (processes[shortest].remainingTime == 0)
+            {
+                completed++;
+                int completionTime = currentTime;
+                processes[shortest].completionTime = completionTime;
+                processes[shortest].turnaroundTime = completionTime - processes[shortest].arrivalTime;
+                processes[shortest].waitingTime = processes[shortest].turnaroundTime - processes[shortest].burstTime;
+                processes[shortest].responseTime = processes[shortest].waitingTime;
+
+                totalTAT += processes[shortest].turnaroundTime;
+                totalWT += processes[shortest].waitingTime;
+                totalResponseTime += processes[shortest].responseTime;
+
+                printf(" --> [P%d] <-- %d", processes[shortest].id, currentTime);
+            }
+            else
+            {
+                printf(" --> [P%d] ", processes[shortest].id);
+            }
+        }
+    }
+
+    printf("\n\nProcess\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\tResponse Time\n");
+    for (int i = 0; i < n; i++)
+    {
+        printf("P%d\t%d\t\t%d\t\t%d\t\t%d\t\t\t%d\t\t%d\n", processes[i].id, processes[i].arrivalTime,
+               processes[i].burstTime, processes[i].completionTime, processes[i].turnaroundTime,
+               processes[i].waitingTime, processes[i].responseTime);
+    }
+
+    double avgTAT = (double)totalTAT / n;
+    double avgWT = (double)totalWT / n;
+    double avgResponseTime = (double)totalResponseTime / n;
+
+    printf("\nNumber of Context Switches: %d\n", contextSwitches);
+    printf("Average Turnaround Time: %.2lf\n", avgTAT);
+    printf("Average Waiting Time: %.2lf\n", avgWT);
+    printf("Average Response Time: %.2lf\n", avgResponseTime);
+
+    return 0;
+}
