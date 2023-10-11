@@ -1,0 +1,74 @@
+#include <stdio.h>
+struct Process
+{
+    int pid;            // Process ID
+    int arrivalTime;    // Arrival Time
+    int burstTime;      // Burst Time
+    int startTime;      // Start Time
+    int finishTime;     // Finish Time
+    int turnaroundTime; // Turnaround Time
+    int waitingTime;    // Waiting Time
+};
+// Function to calculate average TAT, WT, and Response Time
+void calculateAvgTimes(struct Process processes[], int n)
+{
+    float avgTAT = 0, avgWT = 0, avgRT = 0;
+    for (int i = 0; i < n; i++)
+    {
+        processes[i].turnaroundTime = processes[i].finishTime - processes[i].arrivalTime;
+        processes[i].waitingTime = processes[i].turnaroundTime - processes[i].burstTime;
+        // Response time is the same as waiting time for FCFS
+        avgRT += processes[i].waitingTime;
+        avgTAT += processes[i].turnaroundTime;
+        avgWT += processes[i].waitingTime;
+    }
+    avgTAT /= n;
+    avgWT /= n;
+    avgRT /= n;
+
+    printf("Average Turnaround Time: %.2f\n", avgTAT);
+    printf("Average Waiting Time: %.2f\n", avgWT);
+    printf("Average Response Time: %.2f\n", avgRT);
+}
+
+int main()
+{
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    struct Process processes[n];
+    printf("Enter arrival time and burst time for each process:\n");
+    for (int i = 0; i < n; i++)
+    {
+        processes[i].pid = i + 1;
+        printf("Process %d: ", i + 1);
+        scanf("%d %d", &processes[i].arrivalTime, &processes[i].burstTime);
+    }
+
+    int currentTime = 0;
+    int contextSwitches = 0;
+    for (int i = 0; i < n; i++)
+    {
+        if (processes[i].arrivalTime > currentTime)
+        {
+            currentTime = processes[i].arrivalTime;
+        }
+        processes[i].startTime = currentTime;
+        processes[i].finishTime = currentTime + processes[i].burstTime;
+        currentTime = processes[i].finishTime;
+        contextSwitches++;
+    }
+
+    printf("\nProcess Execution Order:\n");
+    printf("PID\tStart Time\tFinish Time\n");
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d\t%d\t\t%d\n", processes[i].pid, processes[i].startTime, processes[i].finishTime);
+    }
+
+    printf("\nNumber of Context Switches: %d\n", contextSwitches);
+
+    calculateAvgTimes(processes, n);
+
+    return 0;
+}
