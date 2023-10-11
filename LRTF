@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+void lrtf_scheduling(int arrival_time[], int burst_time[], int n) {
+    int waiting_time[n];
+    int turnaround_time[n];
+    int response_time[n];
+    int remaining_time[n];
+    int total_burst_time = 0;
+    int current_time = 0;
+    int completed = 0;
+    int context_switches = 0;  // Added variable for context switches
+
+    // Initialize waiting_time, response_time, and remaining_time arrays
+    for (int i = 0; i < n; i++) {
+        waiting_time[i] = 0;
+        response_time[i] = -1;
+        remaining_time[i] = burst_time[i];
+        total_burst_time += burst_time[i];
+    }
+
+    printf("Process\tBurst Time\tWaiting Time\tTurnaround Time\tResponse Time\n");
+
+    while (completed < n) {
+        int next_process = -1;
+        int max_remaining_time = -1;
+
+        for (int i = 0; i < n; i++) {
+            if (arrival_time[i] <= current_time && remaining_time[i] > 0 && remaining_time[i] > max_remaining_time) {
+                max_remaining_time = remaining_time[i];
+                next_process = i;
+            }
+        }
+
+        if (next_process >= 0) {
+            if (response_time[next_process] == -1) {
+                response_time[next_process] = current_time;
+            }
+
+            for (int i = 0; i < n; i++) {
+                if (i != next_process && arrival_time[i] <= current_time && remaining_time[i] > 0) {
+                    waiting_time[i]++;
+                }
+            }
+
+            current_time++;
+            remaining_time[next_process]--;
+
+            if (remaining_time[next_process] == 0) {
+                completed++;
+                turnaround_time[next_process] = current_time - arrival_time[next_process];
+                printf("P%d\t%d\t\t%d\t\t%d\t\t%d\n", next_process + 1, burst_time[next_process], waiting_time[next_process],
+                       turnaround_time[next_process], response_time[next_process]);
+            }
+        } else {
+            current_time++;
+        }
+
+        // Check for context switch
+        if (next_process != completed) {
+            context_switches++;
+        }
+    }
+
+    double total_turnaround_time = 0;
+    double total_waiting_time = 0;
+    double total_response_time = 0;
+
+    for (int i = 0; i < n; i++) {
+        total_turnaround_time += turnaround_time[i];
+        total_waiting_time += waiting_time[i];
+        total_response_time += response_time[i];
+    }
+
+    printf("\nAverage Turnaround Time: %.2f\n", total_turnaround_time / n);
+    printf("Average Waiting Time: %.2f\n", total_waiting_time / n);
+    printf("Average Response Time: %.2f\n", total_response_time / n);
+    printf("Number of Context Switches: %d\n", context_switches);
+}
+
+int main() {
+    // Example data (you can replace this with your own data)
+    int n = 4;
+    int arrival_time[] = {1,2,3,4};
+    int burst_time[] = {2,4,6,8};
+
+    lrtf_scheduling(arrival_time, burst_time, n);
+
+    return 0;
+}
